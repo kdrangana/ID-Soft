@@ -33,18 +33,18 @@ import {
     ZoomOut as ZoomOutIcon, 
     ZoomIn as ZoomInIcon, 
     Lock as LockIcon, 
-    Unlock as UnlockIcon,
-    Eye as EyeIcon,
-    Printer as PrinterIcon,
-    FileText as FilePdfIcon,
-    RotateCw as RotateIcon,
-    Ratio as RatioIcon,
-    Maximize as FitIcon,
-    RefreshCw as ResetIcon,
-    Grid3x3 as GridIcon,
-    RotateCcw as RotateLeftIcon,
-    Move as MoveIcon,
-    RotateCcw as FactoryResetIcon
+    Unlock as UnlockIcon, 
+    Eye as EyeIcon, 
+    Printer as PrinterIcon, 
+    FileText as FilePdfIcon, 
+    RotateCw as RotateIcon, 
+    Ratio as RatioIcon, 
+    Maximize as FitIcon, 
+    RefreshCw as ResetIcon, 
+    Grid3x3 as GridIcon, 
+    RotateCcw as RotateLeftIcon, 
+    Move as MoveIcon, 
+    RotateCcw as FactoryResetIcon 
 } from 'lucide-react';
 
 interface TextStyle {
@@ -131,6 +131,7 @@ interface IdCardData {
     nic: string;
     dateOfIssue: string;
     slPostFileNo: string;
+    officialAddress: string;
 }
 
 const FONT_OPTIONS = [
@@ -154,7 +155,8 @@ const INITIAL_DATA: IdCardData = {
     grade: "Grade II",
     nic: "861100219V",
     dateOfIssue: "2026-01-24",
-    slPostFileNo: "01/2026"
+    slPostFileNo: "01/2026",
+    officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11."
 };
 
 const INITIAL_IMAGES = {
@@ -214,9 +216,9 @@ const INITIAL_CUSTOM_ELEMENTS: CustomElement[] = [
 ];
 
 const INITIAL_GENERATED_CARDS: IdCardData[] = [
-    { id: '1', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Postal Service Officer', grade: 'Grade I', nic: '861100219V', dateOfIssue: '2026-01-23', slPostFileNo: '01/2026' },
-    { id: '2', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Deputy Postmaster General', grade: 'Grade II', nic: '861100219V', dateOfIssue: '2026-01-19', slPostFileNo: '01/2026' },
-    { id: '3', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Postal Service Officer', grade: 'Grade II', nic: '861100219V', dateOfIssue: '2026-01-24', slPostFileNo: '01/2026' },
+    { id: '1', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Postal Service Officer', grade: 'Grade I', nic: '861100219V', dateOfIssue: '2026-01-23', slPostFileNo: '01/2026', officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11." },
+    { id: '2', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Deputy Postmaster General', grade: 'Grade II', nic: '861100219V', dateOfIssue: '2026-01-19', slPostFileNo: '01/2026', officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11." },
+    { id: '3', nameWithInitials: 'K.A.D. Rangana', fullName: '', designation: 'Postal Service Officer', grade: 'Grade II', nic: '861100219V', dateOfIssue: '2026-01-24', slPostFileNo: '01/2026', officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11." },
 ];
 
 const BarcodeGenerator = ({ value, config }: { value: string, config: BarcodeConfig }) => {
@@ -243,6 +245,56 @@ const BarcodeGenerator = ({ value, config }: { value: string, config: BarcodeCon
     }, [value, config]);
 
     return <canvas ref={canvasRef} className="max-w-full" />;
+};
+
+const TextStyleControls = ({ 
+    style, 
+    onUpdate, 
+    title = "Text Style" 
+}: { 
+    style: Partial<TextStyle>, 
+    onUpdate: (updates: Partial<TextStyle>) => void,
+    title?: string
+}) => {
+    return (
+        <div className="space-y-3 p-3 bg-gray-50 rounded border border-gray-200">
+            {title && <h4 className="text-xs font-bold text-gray-700 uppercase">{title}</h4>}
+            
+            <div className="grid grid-cols-2 gap-2">
+                <div>
+                    <label className="block text-[10px] font-medium text-gray-500 mb-1">Font</label>
+                    <select 
+                        value={style.fontFamily || '"Inter", sans-serif'}
+                        onChange={(e) => onUpdate({ fontFamily: e.target.value })}
+                        className="w-full text-xs border border-gray-300 rounded p-1"
+                    >
+                        {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-[10px] font-medium text-gray-500 mb-1">Size (px)</label>
+                    <input 
+                        type="number" 
+                        value={style.fontSize || 12}
+                        onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
+                        className="w-full text-xs border border-gray-300 rounded p-1"
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-between bg-white border border-gray-200 rounded p-1">
+                <button onClick={() => onUpdate({ bold: !style.bold })} className={`p-1.5 rounded hover:bg-gray-100 ${style.bold ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`} title="Bold"><span className="font-bold text-xs">B</span></button>
+                <button onClick={() => onUpdate({ italic: !style.italic })} className={`p-1.5 rounded hover:bg-gray-100 ${style.italic ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`} title="Italic"><span className="italic text-xs font-serif">I</span></button>
+                <button onClick={() => onUpdate({ underline: !style.underline })} className={`p-1.5 rounded hover:bg-gray-100 ${style.underline ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`} title="Underline"><span className="underline text-xs">U</span></button>
+                <button onClick={() => onUpdate({ strikethrough: !style.strikethrough })} className={`p-1.5 rounded hover:bg-gray-100 ${style.strikethrough ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`} title="Strikethrough"><span className="line-through text-xs">S</span></button>
+            </div>
+            
+             <div className="flex justify-between items-center">
+                <label className="block text-[10px] text-gray-500">Color</label>
+                <input type="color" className="w-8 h-8 p-0 rounded cursor-pointer border border-gray-300" value={style.color || '#000000'} onChange={(e) => onUpdate({ color: e.target.value })} />
+            </div>
+        </div>
+    );
 };
 
 const DesignationManager = ({ isOpen, onClose, designations, setDesignations }: { isOpen: boolean, onClose: () => void, designations: DesignationConfig[], setDesignations: React.Dispatch<React.SetStateAction<DesignationConfig[]>> }) => {
@@ -463,6 +515,7 @@ const App = () => {
       fullName: { fontSize: 10, color: '#4b5563', fontFamily: '"Inter", sans-serif', textAlign: 'center' },
       designation: { fontSize: 12, bold: true, color: '#1e3a8a', fontFamily: '"Inter", sans-serif', textAlign: 'center', caps: 'all' },
       grade: { fontSize: 10, color: '#1e3a8a', fontFamily: '"Inter", sans-serif', textAlign: 'center' },
+      officialAddress: { fontSize: 8, color: '#4b5563', fontFamily: '"Inter", sans-serif', textAlign: 'center', lineHeight: 1.2 },
       footerLeft: { fontSize: 9, color: '#4b5563', fontFamily: '"Inter", sans-serif', bold: true },
       footerRight: { fontSize: 9, color: '#4b5563', fontFamily: '"Inter", sans-serif', bold: true }
   });
@@ -497,7 +550,7 @@ const App = () => {
         }
   }, [editingElementId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setData(prev => ({ ...prev, [name]: value }));
   };
@@ -633,6 +686,15 @@ const App = () => {
       } else {
           setCustomElements(prev => prev.map(el => el.id === selectedElementId ? { ...el, ...updates } : el));
       }
+  };
+  
+  const updateAllTextStyles = (updates: Partial<TextStyle>) => {
+      setCustomElements(prev => prev.map(el => {
+          if (el.type === 'text') {
+              return { ...el, ...updates };
+          }
+          return el;
+      }));
   };
   
   const updateCustomElementText = (text: string) => {
@@ -860,7 +922,8 @@ const App = () => {
               grade: { type: Type.STRING },
               nic: { type: Type.STRING },
               dateOfIssue: { type: Type.STRING },
-              slPostFileNo: { type: Type.STRING }
+              slPostFileNo: { type: Type.STRING },
+              officialAddress: { type: Type.STRING }
             }
           }
         }
@@ -1067,54 +1130,13 @@ const App = () => {
 
             {(isStandardSelection || (selectedStyle as CustomElement).type === 'text') && (
                 <>
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <label className="block text-[10px] font-medium text-gray-500 mb-1">Font</label>
-                        <select 
-                            value={selectedStyle.fontFamily}
-                            onChange={(e) => updateSelectedStyle({ fontFamily: e.target.value })}
-                            className="w-full text-xs border border-gray-300 rounded p-1"
-                        >
-                            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-medium text-gray-500 mb-1">Size (px)</label>
-                        <input 
-                            type="number" 
-                            value={selectedStyle.fontSize}
-                            onChange={(e) => updateSelectedStyle({ fontSize: parseInt(e.target.value) })}
-                            className="w-full text-xs border border-gray-300 rounded p-1"
-                        />
-                    </div>
-                </div>
+                <TextStyleControls 
+                    style={selectedStyle} 
+                    onUpdate={updateSelectedStyle} 
+                    title=""
+                />
 
-                <div className="flex justify-between bg-white border border-gray-200 rounded p-1">
-                    <button onClick={() => updateSelectedStyle({ bold: !selectedStyle.bold })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.bold ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="font-bold text-xs">B</span></button>
-                    <button onClick={() => updateSelectedStyle({ italic: !selectedStyle.italic })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.italic ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="italic text-xs font-serif">I</span></button>
-                    <button onClick={() => updateSelectedStyle({ underline: !selectedStyle.underline })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.underline ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="underline text-xs">U</span></button>
-                    <button onClick={() => updateSelectedStyle({ strikethrough: !selectedStyle.strikethrough })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.strikethrough ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="line-through text-xs">S</span></button>
-                    <div className="w-px bg-gray-200 mx-1"></div>
-                    <button onClick={() => updateSelectedStyle({ script: selectedStyle.script === 'super' ? 'none' : 'super' })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.script === 'super' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="text-[10px]">X<sup>2</sup></span></button>
-                    <button onClick={() => updateSelectedStyle({ script: selectedStyle.script === 'sub' ? 'none' : 'sub' })} className={`p-1.5 rounded hover:bg-gray-100 ${selectedStyle.script === 'sub' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}><span className="text-[10px]">X<sub>2</sub></span></button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-500">Caps:</span>
-                        <div className="flex gap-1">
-                        {['none', 'all', 'small'].map((c) => (
-                            <button 
-                                key={c}
-                                onClick={() => updateSelectedStyle({ caps: c as any })}
-                                className={`px-2 py-0.5 rounded text-[10px] border ${selectedStyle.caps === c ? 'bg-blue-100 border-blue-200 text-blue-700' : 'bg-white border-gray-200 text-gray-600'}`}
-                            >
-                                {c === 'none' ? 'Aa' : c === 'all' ? 'AA' : 'Aa'}
-                            </button>
-                        ))}
-                        </div>
-                </div>
-
-                <div className="flex justify-between bg-white border border-gray-200 rounded p-1">
+                <div className="flex justify-between bg-white border border-gray-200 rounded p-1 mt-2">
                     {['left', 'center', 'right', 'justify'].map((align) => (
                             <button 
                             key={align}
@@ -1127,12 +1149,7 @@ const App = () => {
                     ))}
                 </div>
 
-                <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                        <label className="block text-[10px] text-gray-500">Text Color</label>
-                        <input type="color" className="w-8 h-8 p-0 rounded cursor-pointer border border-gray-300" value={selectedStyle.color} onChange={(e) => updateSelectedStyle({ color: e.target.value })} />
-                    </div>
-                    
+                <div className="space-y-3 mt-2">
                     <div className="flex justify-between items-center">
                         <label className="block text-xs font-medium text-gray-500">Opacity: {selectedStyle.opacity}%</label>
                         <input type="range" min="0" max="100" value={selectedStyle.opacity ?? 100} onChange={(e) => updateSelectedStyle({ opacity: parseInt(e.target.value) })} className="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
@@ -1152,7 +1169,7 @@ const App = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 mt-2">
                     <div>
                         <label className="block text-[10px] text-gray-500 mb-1">Letter Spacing (px)</label>
                         <input 
@@ -1341,6 +1358,10 @@ const App = () => {
                         <div><label className="block text-xs font-medium text-gray-700 mb-1">Full Name</label><input type="text" name="fullName" value={data.fullName} onChange={handleInputChange} className="w-full px-3 py-2 bg-blue-50/30 border border-blue-100 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all" /></div>
                         <div><label className="block text-xs font-medium text-gray-700 mb-1">Designation</label><select name="designation" value={data.designation} onChange={handleInputChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400">{designations.map(d => (<option key={d.id} value={d.title}>{d.title}</option>))}</select></div>
                         <div><label className="block text-xs font-medium text-gray-700 mb-1">Grade</label><select name="grade" value={data.grade} onChange={handleInputChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400">{grades.map(g => (<option key={g.id} value={g.title}>{g.title}</option>))}</select></div>
+                        <div className="col-span-2">
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Official Address</label>
+                            <textarea name="officialAddress" rows={3} value={data.officialAddress} onChange={handleInputChange} className="w-full px-3 py-2 bg-blue-50/30 border border-blue-100 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all min-h-[60px]" />
+                        </div>
                         <div className="grid grid-cols-2 gap-4 col-span-2">
                              <div><label className="block text-xs font-medium text-gray-700 mb-1">NIC Number <span className="text-gray-400 font-normal text-[10px]">(generates barcode)</span></label><input type="text" name="nic" value={data.nic} onChange={handleInputChange} className="w-full px-3 py-2 bg-blue-50/30 border border-blue-100 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all" /></div>
                              <div><label className="block text-xs font-medium text-gray-700 mb-1">Date of Issue</label><input type="date" name="dateOfIssue" value={data.dateOfIssue} onChange={handleInputChange} className="w-full px-3 py-2 bg-white border border-gray-200 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400" /></div>
@@ -1370,6 +1391,13 @@ const App = () => {
                 <div className="min-h-[250px]">
                     {activeTab === 'frontText' && (
                         <div>
+                             <div className="mb-4">
+                                <TextStyleControls 
+                                    style={{}} // Empty defaults for global
+                                    onUpdate={updateAllTextStyles} 
+                                    title="Global Text Style (Apply to All)"
+                                />
+                            </div>
                             <div className="flex justify-between items-center mb-4"><span className="text-xs font-medium text-gray-600">Front Side - Text Elements</span><button onClick={addCustomText} className="text-xs flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-medium transition-colors"><PlusIcon /> Add Text</button></div>
                             <div className="space-y-3">{customElements.filter(el => el.type === 'text' && (el.side === 'front' || !el.side)).map((item) => (<div key={item.id} className={`flex items-center gap-2 p-2 rounded border transition-colors cursor-pointer ${selectedElementId === item.id ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`} onClick={() => setSelectedElementId(item.id)}><div className="w-6 flex items-center justify-center text-gray-400"><TextIcon /></div><div className="flex-1 overflow-hidden"><div className="text-xs font-medium truncate text-gray-700">{item.text || "Empty Text"}</div><div className="text-[10px] text-gray-400 truncate">{item.fontSize}px • {item.fontFamily?.split(',')[0].replace(/"/g, '')}</div></div><button onClick={(e) => { e.stopPropagation(); deleteCustomElement(item.id); }} className="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><TrashIcon /></button></div>))}{customElements.filter(el => el.type === 'text' && (el.side === 'front' || !el.side)).length === 0 && (<div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-lg"><p className="text-xs text-gray-400">No custom text added yet.</p></div>)}</div>
                         </div>
@@ -1394,6 +1422,13 @@ const App = () => {
                     )}
                     {activeTab === 'backText' && (
                         <div>
+                             <div className="mb-4">
+                                <TextStyleControls 
+                                    style={{}} 
+                                    onUpdate={updateAllTextStyles} 
+                                    title="Global Text Style (Apply to All)"
+                                />
+                            </div>
                             <div className="flex justify-between items-center mb-4"><span className="text-xs font-medium text-gray-600">Back Side - Text Elements</span><button onClick={addCustomText} className="text-xs flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-medium transition-colors"><PlusIcon /> Add Text</button></div>
                             <div className="space-y-3">{customElements.filter(el => el.type === 'text' && el.side === 'back').map((item) => (<div key={item.id} className={`flex items-center gap-2 p-2 rounded border transition-colors cursor-pointer ${selectedElementId === item.id ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`} onClick={() => setSelectedElementId(item.id)}><div className="w-6 flex items-center justify-center text-gray-400"><TextIcon /></div><div className="flex-1 overflow-hidden"><div className="text-xs font-medium truncate text-gray-700">{item.text || "Empty Text"}</div><div className="text-[10px] text-gray-400 truncate">{item.fontSize}px • {item.fontFamily?.split(',')[0].replace(/"/g, '')}</div></div><button onClick={(e) => { e.stopPropagation(); deleteCustomElement(item.id); }} className="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><TrashIcon /></button></div>))}{customElements.filter(el => el.type === 'text' && el.side === 'back').length === 0 && (<div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-lg"><p className="text-xs text-gray-400">No custom text added yet.</p></div>)}</div>
                         </div>
@@ -1435,7 +1470,19 @@ const App = () => {
                                 <div className="overflow-hidden shadow-md transition-all duration-200 pointer-events-none flex-shrink-0 relative z-20" style={{width: `${118 * profileConfig.scale}px`, height: `${177 * profileConfig.scale}px`, borderWidth: `${profileConfig.borderWidth}px`, borderColor: profileConfig.borderColor, borderStyle: 'solid', borderRadius: `${profileConfig.borderRadius}%`, marginTop: `${profileConfig.yOffset * profileConfig.scale}px`, marginBottom: `${12 * profileConfig.scale}px`}}><div className="w-full h-full bg-gray-200 bg-white">{images.profile && <img src={images.profile} className="w-full h-full object-cover" />}</div></div>
                                 <div className={`mb-0.5 rounded px-1 relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_nameWithInitials' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_nameWithInitials'); }} style={getComputedTextStyle(standardStyles.nameWithInitials)}>{data.nameWithInitials || "Name"}</div>
                                 <div className={`mb-3 px-4 rounded relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_fullName' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_fullName'); }} style={getComputedTextStyle(standardStyles.fullName)}>{data.fullName || "Full Name"}</div>
-                                <div className="mb-2 w-full flex flex-col items-center relative z-20"><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_designation' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_designation'); }} style={getComputedTextStyle({ ...standardStyles.designation, color: standardStyles.designation.color !== '#1e3a8a' ? standardStyles.designation.color : (activeDesignation?.textColor || '#1e3a8a') })}>{data.designation || "Designation"}</div><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_grade' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_grade'); }} style={getComputedTextStyle({ ...standardStyles.grade, color: standardStyles.grade.color !== '#1e3a8a' ? standardStyles.grade.color : (activeGrade?.textColor || '#1e3a8a') })}>{data.grade}</div></div>
+                                <div className="mb-2 w-full flex flex-col items-center relative z-20"><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_designation' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_designation'); }} style={getComputedTextStyle({ ...standardStyles.designation, color: standardStyles.designation.color !== '#1e3a8a' ? standardStyles.designation.color : (activeDesignation?.textColor || '#1e3a8a') })}>{data.designation || "Designation"}</div><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_grade' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_grade'); }} style={getComputedTextStyle({ ...standardStyles.grade, color: standardStyles.grade.color !== '#1e3a8a' ? standardStyles.grade.color : (activeGrade?.textColor || '#1e3a8a') })}>{data.grade}</div>
+                                <div 
+                                    className={`mt-1 px-4 whitespace-pre-wrap ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_officialAddress' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} 
+                                    onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_officialAddress'); }} 
+                                    style={{
+                                        ...getComputedTextStyle(standardStyles.officialAddress),
+                                        width: '100%',
+                                        wordBreak: 'break-word'
+                                    }}
+                                >
+                                    {data.officialAddress}
+                                </div>
+                                </div>
                                 <div className="mt-auto mb-5 w-full px-4 flex flex-col items-center pointer-events-none relative z-20"><div className="w-full max-w-[90%] overflow-hidden flex justify-center"><BarcodeGenerator value={data.nic} config={barcodeConfig} /></div><div className="flex justify-between items-center mt-2 border-t border-gray-100 pt-1 w-full pointer-events-auto"><div className={`rounded px-1 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_footerLeft' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_footerLeft'); }} style={getComputedTextStyle(standardStyles.footerLeft)}>Date: {data.dateOfIssue}</div><div className={`rounded px-1 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_footerRight' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_footerRight'); }} style={getComputedTextStyle(standardStyles.footerRight)}>SL Post {data.slPostFileNo}</div></div></div>
                                 
                                 {customElements.filter(el => !el.side || el.side === 'front').map(el => {
@@ -1621,11 +1668,6 @@ const App = () => {
                 <div className="mt-6 flex justify-center"><button className="flex items-center gap-2 bg-[#1e88e5] text-white px-6 py-2 rounded font-medium shadow-md hover:bg-blue-600 transition-colors"><FilePdfIcon /> Save as PDF</button></div>
             </div>
         </div>
-      </div>
-
-      <div className="bg-white border-t border-gray-200 p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Generated Cards ({generatedCards.length})</h2>
-          <div className="overflow-x-auto rounded-lg border border-gray-200"><table className="w-full text-sm text-left"><thead className="bg-gray-50 text-gray-500 font-medium"><tr><th className="px-6 py-3">Name</th><th className="px-6 py-3">Designation</th><th className="px-6 py-3">Grade</th><th className="px-6 py-3">NIC</th><th className="px-6 py-3">Date of Issue</th><th className="px-6 py-3">File No</th><th className="px-6 py-3 text-right">Actions</th></tr></thead><tbody className="divide-y divide-gray-100">{generatedCards.map((card) => (<tr key={card.id} className="hover:bg-gray-50/50"><td className="px-6 py-4 font-medium text-gray-900">{card.nameWithInitials}</td><td className="px-6 py-4 text-gray-600">{card.designation}</td><td className="px-6 py-4 text-gray-600">{card.grade}</td><td className="px-6 py-4 text-gray-600 font-mono text-xs">{card.nic}</td><td className="px-6 py-4 text-gray-600">{card.dateOfIssue}</td><td className="px-6 py-4 text-gray-600">{card.slPostFileNo}</td><td className="px-6 py-4 text-right"><div className="flex items-center justify-end gap-3"><button className="text-gray-400 hover:text-blue-600"><EyeIcon /></button><button className="text-gray-400 hover:text-green-600"><PrinterIcon /></button><button onClick={() => handleDeleteCard(card.id!)} className="text-gray-400 hover:text-red-500"><TrashIcon /></button></div></td></tr>))}{generatedCards.length === 0 && (<tr><td colSpan={7} className="px-6 py-8 text-center text-gray-400 italic">No generated cards yet. Use the form above to create one.</td></tr>)}</tbody></table></div>
       </div>
       
       {selectedStyle && (
