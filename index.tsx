@@ -162,6 +162,7 @@ const INITIAL_DATA: IdCardData = {
 const INITIAL_IMAGES = {
     profile: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     signature: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Signature_sample.svg/1200px-Signature_sample.svg.png",
+    postmasterSignature: "",
     frontBg: "https://img.freepik.com/free-vector/abstract-blue-geometric-shapes-background_1035-17545.jpg?w=1380&t=st=1706000000~exp=1706000600~hmac=xyz", 
     backBg: ""
 };
@@ -1369,11 +1370,20 @@ const App = () => {
                         <div className="col-span-2"><label className="block text-xs font-medium text-gray-700 mb-1">SL Post File No</label><input type="text" name="slPostFileNo" value={data.slPostFileNo} onChange={handleInputChange} className="w-full px-3 py-2 bg-blue-50/30 border border-blue-100 rounded text-sm text-gray-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all" /></div>
                     </div>
                     
-                    <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-2">Signature (for back side)</label>
-                        <div className="flex gap-4 items-center">
-                             <div className="w-24 h-12 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center overflow-hidden">{images.signature ? <img src={images.signature} className="max-w-full max-h-full" /> : <span className="text-xs text-gray-400">No Sig</span>}</div>
-                             <label className="px-4 py-2 border border-gray-300 rounded text-xs font-medium hover:bg-gray-50 cursor-pointer flex items-center gap-2"><UploadIcon /> Browse & Upload<input type="file" className="hidden" onChange={handleImageUpload('signature')} /></label>
+                    <div className="grid grid-cols-2 gap-6 pt-2 border-t border-gray-100">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-2">Holder Signature (Back)</label>
+                            <div className="flex gap-4 items-center">
+                                 <div className="w-20 h-10 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center overflow-hidden">{images.signature ? <img src={images.signature} className="max-w-full max-h-full" /> : <span className="text-[10px] text-gray-400">No Sig</span>}</div>
+                                 <label className="px-3 py-1.5 border border-gray-300 rounded text-[10px] font-medium hover:bg-gray-50 cursor-pointer flex items-center gap-1 bg-white"><UploadIcon className="w-3 h-3" /> Upload<input type="file" className="hidden" onChange={handleImageUpload('signature')} /></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-2">PMG Signature (Back)</label>
+                            <div className="flex gap-4 items-center">
+                                 <div className="w-20 h-10 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center overflow-hidden">{images.postmasterSignature ? <img src={images.postmasterSignature} className="max-w-full max-h-full" /> : <span className="text-[10px] text-gray-400">No Sig</span>}</div>
+                                 <label className="px-3 py-1.5 border border-gray-300 rounded text-[10px] font-medium hover:bg-gray-50 cursor-pointer flex items-center gap-1 bg-white"><UploadIcon className="w-3 h-3" /> Upload<input type="file" className="hidden" onChange={handleImageUpload('postmasterSignature')} /></label>
+                            </div>
                         </div>
                     </div>
                     <div className="pt-4"><button onClick={handleGenerateCard} className="bg-[#1e88e5] hover:bg-blue-600 text-white px-6 py-2 rounded text-sm font-medium shadow-sm transition-colors">Generate ID Card</button></div>
@@ -1578,7 +1588,19 @@ const App = () => {
                                 <div className="w-full mb-8 px-4 opacity-90 flex justify-center"><BarcodeGenerator value={data.nic} config={{ ...barcodeConfig, displayValue: false }} /></div>
                                 <div className="border-b border-dashed border-gray-400 w-3/4 mb-2 pb-2 min-h-[40px] flex items-end justify-center">{images.signature && <img src={images.signature} className="h-12 mx-auto opacity-80" />}</div>
                                 <p className="text-[10px] font-bold text-gray-800 mb-12 uppercase tracking-wide">Signature of Card Holder</p>
-                                <div className="mt-auto space-y-3 w-full"><div className="w-full flex justify-center"><div className="w-32 h-12 relative"><svg viewBox="0 0 200 100" className="absolute inset-0 w-full h-full text-blue-900 opacity-70"><path d="M20,50 Q50,20 80,50 T150,50" fill="none" stroke="currentColor" strokeWidth="2" /></svg></div></div><p className="text-[11px] font-bold text-gray-900">Postmaster General</p><div className="text-[9px] text-gray-500 leading-relaxed mt-6 border-t border-gray-100 pt-2 w-full">If found, Please return to:<br/><span className="font-semibold text-gray-700">Postmaster General</span><br/>Colombo - 01000</div></div>
+                                <div className="mt-auto space-y-3 w-full">
+                                    <div className="w-full flex justify-center">
+                                        <div className="w-32 h-12 relative flex items-center justify-center">
+                                            {images.postmasterSignature ? (
+                                                <img src={images.postmasterSignature} className="max-w-full max-h-full object-contain opacity-90" />
+                                            ) : (
+                                                <svg viewBox="0 0 200 100" className="absolute inset-0 w-full h-full text-blue-900 opacity-70"><path d="M20,50 Q50,20 80,50 T150,50" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-[11px] font-bold text-gray-900">Postmaster General</p>
+                                    <div className="text-[9px] text-gray-500 leading-relaxed mt-6 border-t border-gray-100 pt-2 w-full">If found, Please return to:<br/><span className="font-semibold text-gray-700">Postmaster General</span><br/>Colombo - 01000</div>
+                                </div>
                             </div>
                             
                             {customElements.filter(el => el.side === 'back').map(el => {
