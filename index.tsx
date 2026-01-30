@@ -44,7 +44,8 @@ import {
     Grid3x3 as GridIcon, 
     RotateCcw as RotateLeftIcon, 
     Move as MoveIcon, 
-    RotateCcw as FactoryResetIcon 
+    RotateCcw as FactoryResetIcon,
+    Pencil as EditIcon
 } from 'lucide-react';
 
 interface TextStyle {
@@ -556,6 +557,50 @@ const SignatureStyleManager = ({ isOpen, onClose, config, setConfig, title }: { 
     );
 };
 
+const GeneratedRecordsTable = ({ cards, onEdit, onPrint, onDelete }: { cards: IdCardData[], onEdit: (card: IdCardData) => void, onPrint: (card: IdCardData) => void, onDelete: (id: string) => void }) => {
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-bold text-gray-800 mb-4">Generated Records</h2>
+            {cards.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">No records generated yet.</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                            <tr>
+                                <th className="px-4 py-2">Name</th>
+                                <th className="px-4 py-2">NIC</th>
+                                <th className="px-4 py-2">Designation</th>
+                                <th className="px-4 py-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {cards.map((card) => (
+                                <tr key={card.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2 font-medium">{card.nameWithInitials}</td>
+                                    <td className="px-4 py-2">{card.nic}</td>
+                                    <td className="px-4 py-2">{card.designation}</td>
+                                    <td className="px-4 py-2 text-right flex justify-end gap-2">
+                                        <button onClick={() => onEdit(card)} className="text-blue-600 hover:bg-blue-50 p-1 rounded" title="Edit">
+                                            <EditIcon size={16} />
+                                        </button>
+                                        <button onClick={() => onPrint(card)} className="text-gray-600 hover:bg-gray-100 p-1 rounded" title="Print">
+                                            <PrinterIcon size={16} />
+                                        </button>
+                                        <button onClick={() => { if(card.id) onDelete(card.id) }} className="text-red-500 hover:bg-red-50 p-1 rounded" title="Delete">
+                                            <TrashIcon size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const toRad = (deg: number) => deg * (Math.PI / 180);
 const rotate = (x: number, y: number, r: number) => ({
     x: x * Math.cos(r) - y * Math.sin(r),
@@ -682,6 +727,19 @@ const App = () => {
   
   const handleDeleteCard = (id: string) => {
       setGeneratedCards(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleEditCard = (card: IdCardData) => {
+    setData(card);
+    // Optionally scroll to top or provide feedback
+  };
+
+  const handlePrintCard = (card: IdCardData) => {
+    setData(card);
+    setPreviewMode('both');
+    setTimeout(() => {
+        window.print();
+    }, 500);
   };
   
   const handleResetPositions = () => {
@@ -1377,6 +1435,28 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800">
+      <style>{`
+          @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-area, #printable-area * {
+                visibility: visible;
+            }
+            #printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+          }
+      `}</style>
       
       <DesignationManager 
         isOpen={isDesignationManagerOpen}
@@ -1597,6 +1677,13 @@ const App = () => {
                 </div>
             </div>
 
+            <GeneratedRecordsTable 
+                cards={generatedCards}
+                onEdit={handleEditCard}
+                onPrint={handlePrintCard}
+                onDelete={handleDeleteCard}
+            />
+
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-base font-bold text-gray-800 mb-4">Custom Elements</h2>
                 <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
@@ -1665,18 +1752,18 @@ const App = () => {
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-base font-bold text-gray-800">Card Preview</h2>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg mr-2"><button onClick={() => setPreviewMode('front')} className={`p-1.5 rounded ${previewMode === 'front' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Front Only"><ViewFrontIcon /></button><button onClick={() => setPreviewMode('back')} className={`p-1.5 rounded ${previewMode === 'back' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Back Only"><ViewBackIcon /></button><button onClick={() => setPreviewMode('both')} className={`p-1.5 rounded ${previewMode === 'both' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Both Sides"><ViewBothIcon /></button></div>
-                        <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500" onClick={() => setZoom(z => Math.max(z - 10, 50))}><ZoomOutIcon /></button><span className="text-xs font-medium text-gray-600 w-10 text-center">{zoom}%</span><button className="p-1.5 hover:bg-gray-100 rounded text-gray-500" onClick={() => setZoom(z => Math.min(z + 10, 200))}><ZoomInIcon /></button><button className="bg-gray-100 text-gray-600 text-[10px] px-2 py-1.5 hover:bg-gray-200 rounded font-medium ml-1" onClick={() => setZoom(100)}>Actual Size</button><div className="w-px h-4 bg-gray-300 mx-1"></div><button onClick={() => {setIsLocked(!isLocked);setSelectedElementId(null);}} className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded font-medium shadow-sm transition-colors ${isLocked ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#1e88e5] text-white'}`}>{isLocked ? <><LockIcon /> Locked</> : <><UnlockIcon /> Drag Mode</>}</button><button onClick={handleResetPositions} className="text-gray-600 text-xs px-3 py-1.5 hover:bg-gray-100 rounded font-medium">Reset Positions</button>
+                        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg mr-2 no-print"><button onClick={() => setPreviewMode('front')} className={`p-1.5 rounded ${previewMode === 'front' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Front Only"><ViewFrontIcon /></button><button onClick={() => setPreviewMode('back')} className={`p-1.5 rounded ${previewMode === 'back' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Back Only"><ViewBackIcon /></button><button onClick={() => setPreviewMode('both')} className={`p-1.5 rounded ${previewMode === 'both' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Both Sides"><ViewBothIcon /></button></div>
+                        <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500 no-print" onClick={() => setZoom(z => Math.max(z - 10, 50))}><ZoomOutIcon /></button><span className="text-xs font-medium text-gray-600 w-10 text-center no-print">{zoom}%</span><button className="p-1.5 hover:bg-gray-100 rounded text-gray-500 no-print" onClick={() => setZoom(z => Math.min(z + 10, 200))}><ZoomInIcon /></button><button className="bg-gray-100 text-gray-600 text-[10px] px-2 py-1.5 hover:bg-gray-200 rounded font-medium ml-1 no-print" onClick={() => setZoom(100)}>Actual Size</button><div className="w-px h-4 bg-gray-300 mx-1 no-print"></div><button onClick={() => {setIsLocked(!isLocked);setSelectedElementId(null);}} className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded font-medium shadow-sm transition-colors no-print ${isLocked ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#1e88e5] text-white'}`}>{isLocked ? <><LockIcon /> Locked</> : <><UnlockIcon /> Drag Mode</>}</button><button onClick={handleResetPositions} className="text-gray-600 text-xs px-3 py-1.5 hover:bg-gray-100 rounded font-medium no-print">Reset Positions</button>
                     </div>
                 </div>
 
-                <div className="bg-blue-50/50 rounded-lg p-3 mb-6 border border-blue-100 text-[11px] text-gray-600 leading-relaxed">{isLocked ? "Preview Mode: Editing disabled. Unlock to make changes." : "Drag elements to reposition. Drag corners to resize. Double-click text to edit."}</div>
+                <div className="bg-blue-50/50 rounded-lg p-3 mb-6 border border-blue-100 text-[11px] text-gray-600 leading-relaxed no-print">{isLocked ? "Preview Mode: Editing disabled. Unlock to make changes." : "Drag elements to reposition. Drag corners to resize. Double-click text to edit."}</div>
 
-                <div className="flex flex-col items-center gap-8 overflow-hidden bg-gray-50 p-8 rounded-xl inner-shadow border border-gray-100 relative" style={{ minHeight: '600px'}}>
+                <div id="printable-area" className="flex flex-col items-center gap-8 overflow-hidden bg-gray-50 p-8 rounded-xl inner-shadow border border-gray-100 relative" style={{ minHeight: '600px'}}>
                     
                     {(previewMode === 'front' || previewMode === 'both') && (
                     <div className="flex flex-col items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-500">Front Side</span>
+                        <span className="text-xs font-semibold text-gray-500 no-print">Front Side</span>
                         <div className="relative group shadow-2xl transition-transform duration-200 bg-white" style={{ width: '320px', height: '500px', transform: `scale(${zoom/100})`, transformOrigin: 'top center' }}>
                             <div className="absolute inset-0 bg-white rounded-xl overflow-hidden border border-gray-200 pointer-events-none">{images.frontBg && <img src={images.frontBg} className="w-full h-full object-cover" />}<div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none"></div></div>
                             <div className="absolute left-0 right-0 h-4 z-10 pointer-events-none" style={{ top: '53px', backgroundColor: activeDesignation?.color || '#2563eb' }}></div>
@@ -1790,7 +1877,7 @@ const App = () => {
 
                     {(previewMode === 'back' || previewMode === 'both') && (
                     <div className="flex flex-col items-center gap-2">
-                         <span className="text-xs font-semibold text-gray-500">Back Side</span>
+                         <span className="text-xs font-semibold text-gray-500 no-print">Back Side</span>
                         <div className="relative group shadow-2xl transition-transform duration-200 bg-white" style={{ width: '320px', height: '500px', transform: `scale(${zoom/100})`, transformOrigin: 'top center' }}>
                             <div className="absolute inset-0 bg-white rounded-xl overflow-hidden border border-gray-200">{images.backBg && <img src={images.backBg} className="w-full h-full object-cover" />}</div>
                             <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center pointer-events-none">
