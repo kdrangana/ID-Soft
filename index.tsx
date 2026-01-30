@@ -199,6 +199,46 @@ const INITIAL_PROFILE_CONFIG: ProfileConfig = {
 
 const INITIAL_CUSTOM_ELEMENTS: CustomElement[] = [
     { 
+        id: 'header-1', 
+        type: 'text', 
+        text: 'Department of Posts', 
+        side: 'front',
+        bold: true, 
+        italic: false, 
+        fontSize: 12, 
+        color: '#1f2937', 
+        x: 10, 
+        y: 20,
+        width: 300,
+        fontFamily: '"Inter", sans-serif',
+        opacity: 100,
+        textAlign: 'center',
+        caps: 'all',
+        letterSpacing: 1,
+        lineHeight: 1,
+        zIndex: 40
+    },
+    { 
+        id: 'header-2', 
+        type: 'text', 
+        text: 'Sri Lanka', 
+        side: 'front',
+        bold: true, 
+        italic: false, 
+        fontSize: 10, 
+        color: '#4b5563', 
+        x: 60, 
+        y: 38,
+        width: 200,
+        fontFamily: '"Inter", sans-serif',
+        opacity: 100,
+        textAlign: 'center',
+        caps: 'all',
+        letterSpacing: 0.5,
+        lineHeight: 1.2,
+        zIndex: 40
+    },
+    { 
         id: '1', 
         type: 'text', 
         text: 'Additional Text Layer', 
@@ -208,7 +248,8 @@ const INITIAL_CUSTOM_ELEMENTS: CustomElement[] = [
         fontSize: 10, 
         color: '#000000', 
         x: 20, 
-        y: 200,
+        y: 250,
+        width: 150,
         fontFamily: '"Inter", sans-serif',
         opacity: 100,
         textAlign: 'left',
@@ -610,6 +651,7 @@ const App = () => {
           color: '#000000', 
           x: 20, 
           y: 20,
+          width: 200, // Default width for wrapping
           fontFamily: '"Inter", sans-serif',
           opacity: 100,
           textAlign: 'left',
@@ -643,7 +685,7 @@ const App = () => {
                     rotation: 0,
                     flipX: false,
                     flipY: false,
-                    zIndex: 30
+                    zIndex: 20
                 };
                 setCustomElements(prev => [...prev, newEl]);
                 setSelectedElementId(newEl.id);
@@ -672,7 +714,7 @@ const App = () => {
           rotation: 0,
           flipX: false,
           flipY: false,
-          zIndex: 30
+          zIndex: 10 // Lower z-index for shapes
       };
       setCustomElements([...customElements, newEl]);
       setSelectedElementId(newEl.id);
@@ -1476,8 +1518,7 @@ const App = () => {
                             <div className="absolute left-0 right-0 bottom-0 h-5 z-10 pointer-events-none" style={{ backgroundColor: activeDesignation?.color || '#2563eb' }}></div>
 
                             <div className="absolute inset-0 flex flex-col items-center pt-5 text-center p-4 z-20">
-                                <div className="flex flex-col items-center w-full mb-6 pointer-events-none relative z-20"><span className="text-[12px] font-bold text-gray-800 uppercase tracking-wide leading-none">Department of Posts</span><span className="text-[10px] font-bold text-gray-600 uppercase tracking-wide leading-tight">Sri Lanka</span></div>
-                                <div className="overflow-hidden shadow-md transition-all duration-200 pointer-events-none flex-shrink-0 relative z-20" style={{width: `${118 * profileConfig.scale}px`, height: `${177 * profileConfig.scale}px`, borderWidth: `${profileConfig.borderWidth}px`, borderColor: profileConfig.borderColor, borderStyle: 'solid', borderRadius: `${profileConfig.borderRadius}%`, marginTop: `${profileConfig.yOffset * profileConfig.scale}px`, marginBottom: `${12 * profileConfig.scale}px`}}><div className="w-full h-full bg-gray-200 bg-white">{images.profile && <img src={images.profile} className="w-full h-full object-cover" />}</div></div>
+                                <div className="overflow-hidden shadow-md transition-all duration-200 pointer-events-none flex-shrink-0 relative z-20" style={{width: `${118 * profileConfig.scale}px`, height: `${177 * profileConfig.scale}px`, borderWidth: `${profileConfig.borderWidth}px`, borderColor: profileConfig.borderColor, borderStyle: 'solid', borderRadius: `${profileConfig.borderRadius}%`, marginTop: `${(profileConfig.yOffset * profileConfig.scale) + 40}px`, marginBottom: `${12 * profileConfig.scale}px`}}><div className="w-full h-full bg-gray-200 bg-white">{images.profile && <img src={images.profile} className="w-full h-full object-cover" />}</div></div>
                                 <div className={`mb-0.5 rounded px-1 relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_nameWithInitials' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_nameWithInitials'); }} style={getComputedTextStyle(standardStyles.nameWithInitials)}>{data.nameWithInitials || "Name"}</div>
                                 <div className={`mb-3 px-4 rounded relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_fullName' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_fullName'); }} style={getComputedTextStyle(standardStyles.fullName)}>{data.fullName || "Full Name"}</div>
                                 <div className="mb-2 w-full flex flex-col items-center relative z-20"><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_designation' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_designation'); }} style={getComputedTextStyle({ ...standardStyles.designation, color: standardStyles.designation.color !== '#1e3a8a' ? standardStyles.designation.color : (activeDesignation?.textColor || '#1e3a8a') })}>{data.designation || "Designation"}</div><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_grade' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_grade'); }} style={getComputedTextStyle({ ...standardStyles.grade, color: standardStyles.grade.color !== '#1e3a8a' ? standardStyles.grade.color : (activeGrade?.textColor || '#1e3a8a') })}>{data.grade}</div>
@@ -1531,6 +1572,9 @@ const App = () => {
                                                     onMouseDown={(e) => { if (isEditing) e.stopPropagation(); }}
                                                     style={{
                                                         ...textStyle,
+                                                        width: el.width ? `${el.width}px` : 'auto',
+                                                        whiteSpace: 'pre-wrap',
+                                                        wordBreak: 'break-word',
                                                         cursor: isEditing ? 'text' : (isLocked ? 'default' : 'move'),
                                                         outline: isEditing ? 'none' : undefined,
                                                         minWidth: isEditing ? '20px' : undefined
@@ -1639,6 +1683,9 @@ const App = () => {
                                                 onMouseDown={(e) => { if (isEditing) e.stopPropagation(); }}
                                                 style={{
                                                     ...textStyle,
+                                                    width: el.width ? `${el.width}px` : 'auto',
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
                                                     cursor: isEditing ? 'text' : (isLocked ? 'default' : 'move'),
                                                     outline: isEditing ? 'none' : undefined,
                                                     minWidth: isEditing ? '20px' : undefined
