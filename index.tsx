@@ -169,7 +169,7 @@ const INITIAL_DATA: IdCardData = {
     nic: "861100219V",
     dateOfIssue: "2026-01-24",
     slPostFileNo: "01/2026",
-    officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11."
+    officialAddress: "Postal Head Quarters,\nD.R. Wijewardena Mawatha,\nColombo 11."
 };
 
 const INITIAL_IMAGES = {
@@ -294,7 +294,7 @@ const INITIAL_GENERATED_CARDS: IdCardData[] = [
         nic: '861100219V', 
         dateOfIssue: '2026-01-23', 
         slPostFileNo: '01/2026', 
-        officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11.",
+        officialAddress: "Postal Head Quarters,\nD.R. Wijewardena Mawatha,\nColombo 11.",
         profileImage: INITIAL_IMAGES.profile,
         holderSignature: INITIAL_IMAGES.signature,
         pmgSignature: INITIAL_IMAGES.postmasterSignature
@@ -308,7 +308,7 @@ const INITIAL_GENERATED_CARDS: IdCardData[] = [
         nic: '861100219V', 
         dateOfIssue: '2026-01-19', 
         slPostFileNo: '01/2026', 
-        officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11.",
+        officialAddress: "Postal Head Quarters,\nD.R. Wijewardena Mawatha,\nColombo 11.",
         profileImage: INITIAL_IMAGES.profile,
         holderSignature: INITIAL_IMAGES.signature,
         pmgSignature: INITIAL_IMAGES.postmasterSignature
@@ -322,7 +322,7 @@ const INITIAL_GENERATED_CARDS: IdCardData[] = [
         nic: '861100219V', 
         dateOfIssue: '2026-01-24', 
         slPostFileNo: '01/2026', 
-        officialAddress: "Postal Head Quarters, D.R. Wijewardena Mawatha,\nColombo 11.",
+        officialAddress: "Postal Head Quarters,\nD.R. Wijewardena Mawatha,\nColombo 11.",
         profileImage: INITIAL_IMAGES.profile,
         holderSignature: INITIAL_IMAGES.signature,
         pmgSignature: INITIAL_IMAGES.postmasterSignature
@@ -813,21 +813,23 @@ const App = () => {
   const handleExportExcel = () => {
       const worksheetData = generatedCards.map(card => {
           // Helper to safeguard against Excel cell limit (32767 chars)
-          const safeCell = (val: string | undefined) => {
-              if (!val) return '';
-              if (val.length > 32700) return 'DATA_TOO_LARGE_FOR_EXCEL';
-              return val;
+          const safeCell = (val: any) => {
+              if (val === null || val === undefined) return '';
+              const str = String(val);
+              // Use 32000 to be safe (limit is 32767)
+              if (str.length > 32000) return 'DATA_TOO_LARGE';
+              return str;
           };
 
           return {
-            'Name with Initials': card.nameWithInitials,
-            'Full Name': card.fullName,
-            'Designation': card.designation,
-            'Grade': card.grade,
-            'NIC': card.nic,
-            'Date of Issue': card.dateOfIssue,
-            'SL Post File No': card.slPostFileNo,
-            'Official Address': card.officialAddress,
+            'Name with Initials': safeCell(card.nameWithInitials),
+            'Full Name': safeCell(card.fullName),
+            'Designation': safeCell(card.designation),
+            'Grade': safeCell(card.grade),
+            'NIC': safeCell(card.nic),
+            'Date of Issue': safeCell(card.dateOfIssue),
+            'SL Post File No': safeCell(card.slPostFileNo),
+            'Official Address': safeCell(card.officialAddress),
             'Profile Photo Path': safeCell(card.profileImage),
             'Holder Signature Path': safeCell(card.holderSignature)
           };
@@ -846,7 +848,7 @@ const App = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
           const data = event.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
+          const workbook = XLSX.read(data, { type: 'array' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
@@ -869,7 +871,7 @@ const App = () => {
 
           setGeneratedCards(prev => [...importedCards, ...prev]);
       };
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
       e.target.value = ''; // Reset input
   };
   
@@ -1858,4 +1860,185 @@ const App = () => {
                     )}
                     {activeTab === 'backImages' && (
                         <div>
-                            <div className="flex justify-between
+                            <div className="flex justify-between items-center mb-4"><span className="text-xs font-medium text-gray-600">Back Side - Images & Icons</span><label className="text-xs flex items-center gap-2 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded font-medium transition-colors cursor-pointer shadow-sm"><UploadIcon /> Upload Image<input type="file" className="hidden" accept="image/*" onChange={addCustomImage} /></label></div>
+                            <div className="grid grid-cols-2 gap-3">{customElements.filter(el => el.type === 'image' && el.side === 'back').map(el => (<div key={el.id} className={`relative group border rounded-lg p-2 transition-all cursor-pointer ${selectedElementId === el.id ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-200' : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm'}`} onClick={() => setSelectedElementId(el.id)}><div className="h-24 bg-gray-100 rounded border border-gray-100 mb-2 flex items-center justify-center overflow-hidden relative"><img src={el.src} className="max-w-full max-h-full object-contain" /><div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">{(el.width || 0).toFixed(0)}px</div></div><button onClick={(e) => { e.stopPropagation(); deleteCustomElement(el.id); }} className="absolute -top-2 -right-2 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors opacity-0 group-hover:opacity-100" title="Remove Image"><TrashIcon className="w-3 h-3"/></button><div className="text-[10px] text-gray-500 text-center truncate">Click to select & resize</div></div>))}{customElements.filter(el => el.type === 'image' && el.side === 'back').length === 0 && (<div className="col-span-2 flex flex-col items-center justify-center py-10 border-2 border-dashed border-gray-200 rounded-lg text-gray-400"><div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-gray-300"><ImageIcon /></div><span className="text-xs font-medium">No images added</span><span className="text-[10px] mt-1">Upload logos, icons, or graphics</span></div>)}</div>
+                        </div>
+                    )}
+                    {activeTab === 'backText' && (
+                        <div>
+                             <div className="mb-4">
+                                <TextStyleControls 
+                                    style={{}} 
+                                    onUpdate={updateAllTextStyles} 
+                                    title="Global Text Style (Apply to All)"
+                                />
+                            </div>
+                            <div className="flex justify-between items-center mb-4"><span className="text-xs font-medium text-gray-600">Back Side - Text Elements</span><button onClick={addCustomText} className="text-xs flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-medium transition-colors"><PlusIcon /> Add Text</button></div>
+                            <div className="space-y-3">{customElements.filter(el => el.type === 'text' && el.side === 'back').map((item) => (<div key={item.id} className={`flex items-center gap-2 p-2 rounded border transition-colors cursor-pointer ${selectedElementId === item.id ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`} onClick={() => setSelectedElementId(item.id)}><div className="w-6 flex items-center justify-center text-gray-400"><TextIcon /></div><div className="flex-1 overflow-hidden"><div className="text-xs font-medium truncate text-gray-700">{item.text || "Empty Text"}</div><div className="text-[10px] text-gray-400 truncate">{item.fontSize}px • {item.fontFamily?.split(',')[0].replace(/"/g, '')}</div></div><button onClick={(e) => { e.stopPropagation(); deleteCustomElement(item.id); }} className="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><TrashIcon /></button></div>))}{customElements.filter(el => el.type === 'text' && el.side === 'back').length === 0 && (<div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-lg"><p className="text-xs text-gray-400">No custom text added yet.</p></div>)}</div>
+                        </div>
+                    )}
+                    {activeTab === 'backShapes' && (
+                        <div>
+                            <div className="mb-4"><span className="text-xs font-medium text-gray-600 block mb-3">Add Shapes (Back Side)</span><div className="grid grid-cols-4 gap-2"><button onClick={() => addCustomShape('rectangle')} className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-200 transition-colors"><SquareIcon className="text-gray-600"/><span className="text-[10px] text-gray-500">Box</span></button><button onClick={() => addCustomShape('circle')} className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-200 transition-colors"><CircleIcon className="text-gray-600"/><span className="text-[10px] text-gray-500">Circle</span></button><button onClick={() => addCustomShape('star')} className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-200 transition-colors"><StarIcon className="text-gray-600"/><span className="text-[10px] text-gray-500">Star</span></button><button onClick={() => addCustomShape('line')} className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-200 transition-colors"><LineIcon className="text-gray-600"/><span className="text-[10px] text-gray-500">Line</span></button></div></div>
+                            <div className="space-y-2 mt-4 pt-4 border-t border-gray-100"><span className="text-xs font-medium text-gray-600 block mb-2">Added Shapes</span>{customElements.filter(el => el.type === 'shape' && el.side === 'back').map(el => (<div key={el.id} className={`flex items-center justify-between p-2 border rounded cursor-pointer ${selectedElementId === el.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200 hover:bg-gray-50'}`} onClick={() => setSelectedElementId(el.id)}><div className="flex items-center gap-3"><div className="w-6 flex justify-center text-gray-500">{el.shapeType === 'rectangle' && <SquareIcon />}{el.shapeType === 'circle' && <CircleIcon />}{el.shapeType === 'star' && <StarIcon />}{el.shapeType === 'line' && <LineIcon />}</div><div className="text-xs text-gray-700 capitalize">{el.shapeType}</div></div><button onClick={(e) => { e.stopPropagation(); deleteCustomElement(el.id); }} className="text-gray-400 hover:text-red-500"><TrashIcon className="w-3 h-3"/></button></div>))}{customElements.filter(el => el.type === 'shape' && el.side === 'back').length === 0 && (<div className="text-center py-4 text-[10px] text-gray-400 italic">No shapes added yet.</div>)}</div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-5">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-base font-bold text-gray-800">Card Preview</h2>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg mr-2 no-print"><button onClick={() => setPreviewMode('front')} className={`p-1.5 rounded ${previewMode === 'front' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Front Only"><ViewFrontIcon /></button><button onClick={() => setPreviewMode('back')} className={`p-1.5 rounded ${previewMode === 'back' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Back Only"><ViewBackIcon /></button><button onClick={() => setPreviewMode('both')} className={`p-1.5 rounded ${previewMode === 'both' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`} title="Both Sides"><ViewBothIcon /></button></div>
+                        <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500 no-print" onClick={() => setZoom(z => Math.max(z - 10, 50))}><ZoomOutIcon /></button><span className="text-xs font-medium text-gray-600 w-10 text-center no-print">{zoom}%</span><button className="p-1.5 hover:bg-gray-100 rounded text-gray-500 no-print" onClick={() => setZoom(z => Math.min(z + 10, 200))}><ZoomInIcon /></button><button className="bg-gray-100 text-gray-600 text-[10px] px-2 py-1.5 hover:bg-gray-200 rounded font-medium ml-1 no-print" onClick={() => setZoom(100)}>Actual Size</button><div className="w-px h-4 bg-gray-300 mx-1 no-print"></div><button onClick={() => {setIsLocked(!isLocked);setSelectedElementId(null);}} className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded font-medium shadow-sm transition-colors no-print ${isLocked ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-[#1e88e5] text-white'}`}>{isLocked ? <><LockIcon /> Locked</> : <><UnlockIcon /> Drag Mode</>}</button><button onClick={handleResetPositions} className="text-gray-600 text-xs px-3 py-1.5 hover:bg-gray-100 rounded font-medium no-print">Reset Positions</button>
+                    </div>
+                </div>
+
+                <div className="bg-blue-50/50 rounded-lg p-3 mb-6 border border-blue-100 text-[11px] text-gray-600 leading-relaxed no-print">{isLocked ? "Preview Mode: Editing disabled. Unlock to make changes." : "Drag elements to reposition. Drag corners to resize. Double-click text to edit."}</div>
+
+                <div id="printable-area" className="flex flex-col items-center gap-8 overflow-hidden bg-gray-50 p-8 rounded-xl inner-shadow border border-gray-100 relative" style={{ minHeight: '600px'}}>
+                    
+                    {(previewMode === 'front' || previewMode === 'both') && (
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-500 no-print">Front Side</span>
+                        <div className="relative group shadow-2xl transition-transform duration-200 bg-white" style={{ width: '320px', height: '500px', transform: `scale(${zoom/100})`, transformOrigin: 'top center' }}>
+                            <div className="absolute inset-0 bg-white rounded-xl overflow-hidden border border-gray-200 pointer-events-none">{images.frontBg && <img src={images.frontBg} className="w-full h-full object-cover" />}<div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none"></div></div>
+                            <div className="absolute left-0 right-0 h-4 z-10 pointer-events-none" style={{ top: '53px', backgroundColor: activeDesignation?.color || '#2563eb' }}></div>
+                            <div className="absolute left-0 right-0 bottom-0 h-5 z-10 pointer-events-none" style={{ backgroundColor: activeDesignation?.color || '#2563eb' }}></div>
+
+                            <div className="absolute inset-0 flex flex-col items-center pt-5 text-center p-4 z-20">
+                                <div className="overflow-hidden shadow-md transition-all duration-200 pointer-events-none flex-shrink-0 relative z-20" style={{width: `${118 * profileConfig.scale}px`, height: `${177 * profileConfig.scale}px`, borderWidth: `${profileConfig.borderWidth}px`, borderColor: profileConfig.borderColor, borderStyle: 'solid', borderRadius: `${profileConfig.borderRadius}%`, marginTop: `${(profileConfig.yOffset * profileConfig.scale) + 40}px`, marginBottom: `${12 * profileConfig.scale}px`}}><div className="w-full h-full bg-gray-200 bg-white">{images.profile && <img src={images.profile} className="w-full h-full object-cover" />}</div></div>
+                                <div className={`mb-0.5 rounded px-1 relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_nameWithInitials' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_nameWithInitials'); }} style={getComputedTextStyle(standardStyles.nameWithInitials)}>{data.nameWithInitials || "Name"}</div>
+                                <div className={`mb-3 px-4 rounded relative z-20 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_fullName' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_fullName'); }} style={getComputedTextStyle(standardStyles.fullName)}>{data.fullName || "Full Name"}</div>
+                                <div className="mb-2 w-full flex flex-col items-center relative z-20"><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_designation' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_designation'); }} style={getComputedTextStyle({ ...standardStyles.designation, color: standardStyles.designation.color !== '#1e3a8a' ? standardStyles.designation.color : (activeDesignation?.textColor || '#1e3a8a') })}>{data.designation || "Designation"}</div><div className={`rounded px-2 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_grade' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_grade'); }} style={getComputedTextStyle({ ...standardStyles.grade, color: standardStyles.grade.color !== '#1e3a8a' ? standardStyles.grade.color : (activeGrade?.textColor || '#1e3a8a') })}>{data.grade}</div>
+                                <div 
+                                    className={`mt-1 px-4 whitespace-pre-wrap ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_officialAddress' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} 
+                                    onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_officialAddress'); }} 
+                                    style={{
+                                        ...getComputedTextStyle(standardStyles.officialAddress),
+                                        width: '100%',
+                                        wordBreak: 'break-word'
+                                    }}
+                                >
+                                    {data.officialAddress}
+                                </div>
+                                </div>
+                                <div className="mt-auto mb-5 w-full px-4 flex flex-col items-center pointer-events-none relative z-20"><div className="w-full max-w-[90%] overflow-hidden flex justify-center"><BarcodeGenerator value={data.nic} config={barcodeConfig} /></div><div className="flex justify-between items-center mt-2 border-t border-gray-100 pt-1 w-full pointer-events-auto"><div className={`rounded px-1 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_footerLeft' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_footerLeft'); }} style={getComputedTextStyle(standardStyles.footerLeft)}>Date: {data.dateOfIssue}</div><div className={`rounded px-1 ${!isLocked ? 'cursor-pointer hover:ring-1 hover:ring-blue-300' : ''} ${selectedElementId === 'std_footerRight' ? 'ring-1 ring-blue-500 bg-blue-50/20' : ''}`} onClick={(e) => { if (isLocked) return; e.stopPropagation(); setSelectedElementId('std_footerRight'); }} style={getComputedTextStyle(standardStyles.footerRight)}>SL Post {data.slPostFileNo}</div></div></div>
+                                
+                                {customElements.filter(el => !el.side || el.side === 'front').map(el => {
+                                    const textStyle = el.type === 'text' ? getComputedTextStyle(el) : {};
+                                    const isEditing = editingElementId === el.id;
+                                    const isSelected = selectedElementId === el.id && !isLocked;
+
+                                    return (
+                                        <div 
+                                            key={el.id} 
+                                            onMouseDown={(e) => handleElementMouseDown(e, el.id)}
+                                            onDoubleClick={(e) => {
+                                                e.stopPropagation();
+                                                if (isLocked) return;
+                                                if (el.type === 'text') setEditingElementId(el.id);
+                                            }}
+                                            className={`absolute group select-none pointer-events-auto ${isSelected ? 'z-[100]' : ''}`}
+                                            style={{ 
+                                                top: `${el.y}px`, 
+                                                left: `${el.x}px`, 
+                                                cursor: isLocked ? 'default' : 'move',
+                                                transform: `rotate(${el.rotation || 0}deg)`,
+                                                zIndex: isSelected ? 100 : (el.zIndex || 30)
+                                            }}
+                                        >
+                                            <div className={`${isSelected ? 'ring-1 ring-blue-500 ring-dashed' : (!isLocked ? 'group-hover:ring-1 group-hover:ring-gray-300 group-hover:ring-dashed' : '')}`}>
+                                            {el.type === 'text' ? (
+                                                <div 
+                                                    id={`editable-text-${el.id}`}
+                                                    contentEditable={isEditing}
+                                                    suppressContentEditableWarning={true}
+                                                    onBlur={(e) => {
+                                                        updateCustomElement(el.id, { text: e.currentTarget.innerText });
+                                                        setEditingElementId(null);
+                                                    }}
+                                                    onMouseDown={(e) => { if (isEditing) e.stopPropagation(); }}
+                                                    style={{
+                                                        ...textStyle,
+                                                        width: el.width ? `${el.width}px` : 'auto',
+                                                        whiteSpace: 'pre-wrap',
+                                                        wordBreak: 'break-word',
+                                                        cursor: isEditing ? 'text' : (isLocked ? 'default' : 'move'),
+                                                        outline: isEditing ? 'none' : undefined,
+                                                        minWidth: isEditing ? '20px' : undefined
+                                                    }}
+                                                >
+                                                    {el.text}
+                                                </div>
+                                            ) : el.type === 'shape' ? (
+                                                <div style={{
+                                                    width: `${el.width}px`,
+                                                    height: `${el.height}px`,
+                                                    opacity: (el.opacity ?? 100) / 100,
+                                                    transform: `scaleX(${el.flipX ? -1 : 1}) scaleY(${el.flipY ? -1 : 1})`,
+                                                    position: 'relative'
+                                                }}>
+                                                    {el.shapeType === 'rectangle' && (<div style={{width: '100%', height: '100%', backgroundColor: el.fillColor, border: `${el.strokeWidth}px solid ${el.strokeColor}`}} />)}
+                                                    {el.shapeType === 'circle' && (<div style={{width: '100%', height: '100%', backgroundColor: el.fillColor, border: `${el.strokeWidth}px solid ${el.strokeColor}`, borderRadius: '50%'}} />)}
+                                                    {el.shapeType === 'star' && (<svg viewBox="0 0 24 24" style={{width: '100%', height: '100%', overflow: 'visible'}} preserveAspectRatio="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill={el.fillColor} stroke={el.strokeColor} strokeWidth={el.strokeWidth ? el.strokeWidth / 2 : 0} vectorEffect="non-scaling-stroke" /></svg>)}
+                                                    {el.shapeType === 'line' && (<div style={{width: '100%', height: `${Math.max(1, el.strokeWidth || 1)}px`, backgroundColor: el.strokeColor, position: 'absolute', top: '50%', transform: 'translateY(-50%)'}} />)}
+                                                </div>
+                                            ) : (
+                                                <div style={{
+                                                    width: `${el.width}px`,
+                                                    height: 'auto',
+                                                    opacity: (el.opacity ?? 100) / 100,
+                                                    transform: `scaleX(${el.flipX ? -1 : 1}) scaleY(${el.flipY ? -1 : 1})`
+                                                }} className="relative">
+                                                    <img src={el.src} className="w-full h-auto pointer-events-none" />
+                                                </div>
+                                            )}
+                                            </div>
+
+                                            {isSelected && !isEditing && (
+                                                <>
+                                                    <div onMouseDown={(e) => handleResizeMouseDown(e, el.id, 'nw')} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-600 rounded-full shadow cursor-nw-resize z-50 hover:bg-blue-50"></div>
+                                                    <div onMouseDown={(e) => handleResizeMouseDown(e, el.id, 'ne')} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-600 rounded-full shadow cursor-ne-resize z-50 hover:bg-blue-50"></div>
+                                                    <div onMouseDown={(e) => handleResizeMouseDown(e, el.id, 'sw')} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-600 rounded-full shadow cursor-sw-resize z-50 hover:bg-blue-50"></div>
+                                                    <div onMouseDown={(e) => handleResizeMouseDown(e, el.id, 'se')} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-600 rounded-full shadow cursor-se-resize z-50 hover:bg-blue-50"></div>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                    )}
+                </div>
+                
+                <div className="mt-6 flex justify-center"><button className="flex items-center gap-2 bg-[#1e88e5] text-white px-6 py-2 rounded font-medium shadow-md hover:bg-blue-600 transition-colors"><FilePdfIcon /> Save as PDF</button></div>
+            </div>
+        </div>
+      </div>
+      
+      {selectedStyle && (
+          <div 
+              ref={inspectorRef}
+              className={`fixed w-64 bg-white/95 backdrop-blur rounded-xl shadow-2xl border border-gray-200 p-4 z-[1000] animate-in fade-in zoom-in-95 duration-200 max-h-[calc(100%-2rem)] overflow-y-auto ${inspectorPosition ? '' : 'right-4 top-24'}`}
+              style={inspectorPosition ? { top: inspectorPosition.y, left: inspectorPosition.x } : {}}
+          >
+              {renderInspector()}
+          </div>
+      )}
+
+    </div>
+  );
+};
+
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+    console.error("Failed to find the root element");
+} else {
+    const root = createRoot(rootElement);
+    root.render(<App />);
+}
